@@ -97,8 +97,8 @@ export function AuthForm() {
             </div>
           )}
           {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
+            <Alert variant="destructive" className="bg-destructive/10 border-destructive/50">
+              <AlertDescription className="text-destructive">{error}</AlertDescription>
             </Alert>
           )}
           {successMessage && (
