@@ -1,56 +1,108 @@
 # Birthday Tracker
 
-A simple yet powerful birthday tracking application with automated email reminders.
+A multi-channel notification system designed for tracking personal and professional birthdays with robust timezone support, calendar synchronization, and automated reminders.
 
-## Features
+---
 
-- **Firebase Authentication**: Secure login/signup with email and password
-- **Birthday Management**: Full CRUD operations for tracking birthdays
-- **Timezone Support**: Track birthdays across different timezones
-- **Automated Email Reminders**: Get notified 5 minutes before midnight on each person's birthday (in their timezone)
-- **Clean, Modern UI**: Simple and elegant interface with dark mode support
+## 🏗️ Architecture
 
-## Setup Instructions
+This repository is built as a monorepo containing three main components:
 
-### 1. Firebase Setup
+- **`ui/`**: The modern Next.js 16 frontend application using App Router. Built with Tailwind CSS and shadcn/ui. Uses Firebase for Authentication and Firestore for the real-time database.
+- **`python-workers/`**: A distributed backend for asynchronous notifications. Uses Redis as a message broker to decouple the scheduling of birthdays from the actual sending of Emails (Resend), Telegram messages, and Discord webhooks.
+- **`mcp-server/`**: A standalone Model Context Protocol (MCP) server that exposes database querying capabilities directly to AI agents.
 
-1. Create a new Firebase project at [https://console.firebase.google.com](https://console.firebase.google.com)
-2. Enable Email/Password authentication in Firebase Console
-3. Create a Firestore database
-4. Add the following environment variables to your Vercel project:
+## ✨ Features
 
-\`\`\`env
+- **Multi-Channel Reminders**: Get notified via Email, Telegram, or Discord.
+- **Timezone Intelligence**: Reminders are dynamically calculated and dispatched exactly 5 minutes before midnight in the birthday person's specific timezone.
+- **Calendar Sync**: Dynamic `.ics` feeds for native mobile calendar synchronization (Apple/Google calendars).
+- **Bulk Import**: Easily import birthdays from Facebook (`.ics`), Google Contacts, and Apple Contacts (`.vcf` / `.zip`).
+- **Firebase Authentication**: Secure login/signup with email, password, and Google OAuth.
+
+---
+
+## 🚀 Setup Instructions
+
+### 1. UI Setup (Next.js)
+
+Navigate to the `ui` directory:
+```bash
+cd ui
+npm install
+```
+
+Set up your frontend environment variables in `ui/.env.local`:
+```env
 NEXT_PUBLIC_FIREBASE_API_KEY=your_api_key
 NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=your_auth_domain
 NEXT_PUBLIC_FIREBASE_PROJECT_ID=your_project_id
 NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=your_storage_bucket
 NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
 NEXT_PUBLIC_FIREBASE_APP_ID=your_app_id
-\`\`\`
+```
 
-### 2. Email Setup (Resend)
+Run the development server:
+```bash
+npm run dev
+```
 
-1. Sign up for a free account at [https://resend.com](https://resend.com)
-2. Get your API key
-3. Add to Vercel environment variables:
+### 2. Microservices Backend (Python Workers)
 
-\`\`\`env
+Navigate to `python-workers` and configure your environment:
+```env
+REDIS_HOST=localhost
 RESEND_API_KEY=your_resend_api_key
-\`\`\`
+TELEGRAM_BOT_TOKEN=your_telegram_bot_token
+DISCORD_WEBHOOK_URL=your_discord_webhook
+```
 
-### 3. Cron Job Secret
+Start the Redis server, scheduler, and worker containers:
+```bash
+docker-compose up -d
+```
 
-Add a secret for securing the cron job endpoint:
+### 3. MCP Server
 
-\`\`\`env
-CRON_SECRET=your_random_secret_string
-\`\`\`
+Navigate to `mcp-server` to start the local Model Context Protocol service:
+```bash
+cd mcp-server
+npm install
+npm start
+```
 
-### 4. Firestore Security Rules
+---
 
-Add these security rules to your Firestore database:
+## 🧪 Testing
 
-\`\`\`javascript
+### UI Tests (Vitest)
+
+```bash
+cd ui
+npm test               # watch mode
+npm run test:coverage  # single run with coverage report
+```
+
+All 43 unit and component tests pass across:
+- **Library utilities**: `birthday-calculator`, `birthdays`, `notifications`, `user-profile`, `firebase`, `utils`
+- **Components**: `BirthdayCard`, `BirthdayDashboard`, `ImportBirthdays`, `ProtectedRoute`
+
+Coverage is enforced at 80% (lines, functions, branches) in CI.
+
+### CI/CD (GitHub Actions)
+
+On every push/PR to `main`, the workflow at `.github/workflows/test.yml` runs:
+- **UI tests** — Vitest unit/integration + Playwright E2E
+- **Worker tests** — Pytest with coverage (Python workers)
+- **MCP tests** — Vitest (passes with no tests flag until tests are added)
+
+---
+
+## 🔒 Firestore Security Rules
+
+Ensure your Firestore database is secure. Add these rules to your Firebase Console:
+
+```javascript
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
@@ -66,31 +118,4 @@ service cloud.firestore {
     }
   }
 }
-\`\`\`
-
-## How It Works
-
-1. **User Registration**: When users sign up, their profile is stored in Firestore
-2. **Birthday Tracking**: Users can add birthdays with name, company, date, and timezone
-3. **Automated Reminders**: A Vercel Cron Job runs every hour to check for birthdays
-4. **Smart Timing**: Emails are sent at 23:55 (5 mins before midnight) in each person's timezone
-5. **Email Delivery**: Resend handles the email delivery with a beautiful HTML template
-
-## Deployment
-
-Deploy to Vercel with one click:
-
-1. Connect your GitHub repository to Vercel
-2. Add all environment variables
-3. Deploy!
-
-The cron job will automatically be set up through the `vercel.json` configuration.
-
-## Tech Stack
-
-- **Framework**: Next.js 16 with App Router
-- **Authentication**: Firebase Auth
-- **Database**: Firebase Firestore
-- **Email**: Resend
-- **Styling**: Tailwind CSS + shadcn/ui
-- **Deployment**: Vercel
+```

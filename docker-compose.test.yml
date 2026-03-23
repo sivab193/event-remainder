@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  redis-test:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  firebase-emulator:
+    image: spine3/firebase-emulator:latest
+    ports:
+      - "9099:9099" # Auth
+      - "8080:8080" # Firestore
+      - "4000:4000" # UI
+    environment:
+      - FIREBASE_AUTH_EMULATOR_HOST=0.0.0.0:9099
+      - FIRESTORE_EMULATOR_HOST=0.0.0.0:8080
+    command: ["emulators:start", "--only", "auth,firestore", "--project", "test-project"]
