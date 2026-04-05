@@ -48,6 +48,9 @@ services:
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASSWORD=${SMTP_PASSWORD}
       - SMTP_FROM=${SMTP_FROM:-${SMTP_USER}}
+      - FIREBASE_CREDENTIALS=/app/serviceAccountKey.json
+    volumes:
+      - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
     healthcheck:
       test: ["CMD", "pgrep", "-f", "main.py"]
       interval: 30s

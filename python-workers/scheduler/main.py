@@ -8,6 +8,7 @@ import redis
 import firebase_admin
 from firebase_admin import credentials
 from firebase_admin import firestore
+from google.cloud.firestore import FieldFilter
 
 # Connect to Redis
 redis_host = os.getenv('REDIS_HOST', 'localhost')
@@ -109,7 +110,7 @@ def check_birthdays():
         global_timing = notifications.get('reminderTiming', 'midnight')
         offset = parse_timing_offset(global_timing)
 
-        birthdays_ref = db.collection('birthdays').where(field_path='userId', op_string='==', value=user_id).stream()
+        birthdays_ref = db.collection('birthdays').where(filter=FieldFilter('userId', '==', user_id)).stream()
         for bday_doc in birthdays_ref:
             bday = bday_doc.to_dict()
             birthday_id = bday_doc.id
@@ -181,7 +182,7 @@ def process_email_jobs():
         
         # Query pending email jobs that haven't expired
         email_jobs_ref = db.collection('email_jobs')
-        jobs = email_jobs_ref.where(field_path='status', op_string='==', value='pending').where(field_path='expiresAt', op_string='>', value=now).stream()
+        jobs = email_jobs_ref.where(filter=FieldFilter('status', '==', 'pending')).where(filter=FieldFilter('expiresAt', '>', now)).stream()
         
         job_count = 0
         for job_doc in jobs:
