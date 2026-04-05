@@ -1,5 +1,6 @@
 services:
   redis:
+    container_name: redis
     image: redis:alpine
     ports:
       - "6379:6379"
@@ -11,6 +12,7 @@ services:
       retries: 5
 
   scheduler:
+    container_name: scheduler
     build:
       context: .
       dockerfile: scheduler/Dockerfile
@@ -31,6 +33,7 @@ services:
       retries: 3
 
   email_worker:
+    container_name: email
     build:
       context: .
       dockerfile: email_worker/Dockerfile
@@ -52,6 +55,7 @@ services:
       retries: 3
 
   telegram_worker:
+    container_name: telegram
     build:
       context: .
       dockerfile: telegram_worker/Dockerfile
@@ -69,6 +73,7 @@ services:
       retries: 3
 
   discord_worker:
+    container_name: discord
     build:
       context: .
       dockerfile: discord_worker/Dockerfile
@@ -85,6 +90,7 @@ services:
       retries: 3
 
   bulk_import:
+    container_name: bulk_import
     build:
       context: .
       dockerfile: bulk_import/Dockerfile

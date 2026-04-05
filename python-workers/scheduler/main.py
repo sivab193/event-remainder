@@ -86,7 +86,7 @@ def is_already_sent(user_id, birthday_id, date_str):
 
 
 def check_birthdays():
-    print(f"[{datetime.datetime.utcnow().isoformat()}] Checking birthdays...")
+    print(f"[{datetime.datetime.now(datetime.timezone.utc).isoformat()}] Checking birthdays...")
     if not db:
         print("Mock mode: pushing mock events to queues.")
         mock_payload = json.dumps({"userId": "123", "name": "John Doe", "email": "test@example.com"})
@@ -109,7 +109,7 @@ def check_birthdays():
         global_timing = notifications.get('reminderTiming', 'midnight')
         offset = parse_timing_offset(global_timing)
 
-        birthdays_ref = db.collection('birthdays').where('userId', '==', user_id).stream()
+        birthdays_ref = db.collection('birthdays').where(field_path='userId', op_string='==', value=user_id).stream()
         for bday_doc in birthdays_ref:
             bday = bday_doc.to_dict()
             birthday_id = bday_doc.id
@@ -181,7 +181,7 @@ def process_email_jobs():
         
         # Query pending email jobs that haven't expired
         email_jobs_ref = db.collection('email_jobs')
-        jobs = email_jobs_ref.where('status', '==', 'pending').where('expiresAt', '>', now).stream()
+        jobs = email_jobs_ref.where(field_path='status', op_string='==', value='pending').where(field_path='expiresAt', op_string='>', value=now).stream()
         
         job_count = 0
         for job_doc in jobs:
