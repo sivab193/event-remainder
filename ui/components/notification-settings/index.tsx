@@ -476,6 +476,18 @@ export function NotificationSettings() {
               We&apos;ve sent a 6-digit code to your {verifyingChannel}. Please enter it below to verify this channel and start receiving notifications.
             </DialogDescription>
           </DialogHeader>
+          {jobStatus === "sent" && (
+            <div className="flex items-center gap-2 text-green-600 text-sm bg-green-50 p-3 rounded-md border border-green-200">
+              <CheckCircle2 className="w-4 h-4" />
+              Code sent successfully!
+            </div>
+          )}
+          {jobStatus === "failed" && (
+            <div className="flex items-center gap-2 text-red-600 text-sm bg-red-50 p-3 rounded-md border border-red-200">
+              <AlertCircle className="w-4 h-4" />
+              Failed to send code. Please try again.
+            </div>
+          )}
           <div className="py-4">
             <Input 
               placeholder="Enter 6-digit code" 

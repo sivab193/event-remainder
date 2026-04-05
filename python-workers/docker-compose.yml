@@ -21,7 +21,7 @@ services:
     environment:
       - REDIS_HOST=redis
       - FIREBASE_CREDENTIALS=/app/serviceAccountKey.json
-      - CHECK_INTERVAL=60
+      - CHECK_INTERVAL=10
     volumes:
       - ./serviceAccountKey.json:/app/serviceAccountKey.json:ro
     healthcheck:
